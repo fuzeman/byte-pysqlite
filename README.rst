@@ -17,7 +17,7 @@ PySQLite executor for `byte <https://github.com/fuzeman/byte>`_.
 
 **Supported Platforms:**
 
-- **Python:** 2.6, 2.7, 3.3+
+- **Python:** 2.7
 
 **Requirements:**
 
