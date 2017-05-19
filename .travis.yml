@@ -1,0 +1,36 @@
+dist: trusty
+sudo: false
+language: python
+
+python:
+  - 2.7
+  - 3.6
+  - pypy-5.4.1
+  - pypy3.3-5.2-alpha1
+  - 2.6
+  - 3.3
+  - 3.4
+  - 3.5
+  - nightly
+
+install:
+  - travis_retry pip install --upgrade coveralls setuptools tox-travis wheel
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy'* ]]; then travis_retry pip install pyOpenSSL>=16.2.0; fi
+script:
+  - tox
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy3'* ]]; then
+      python setup.py bdist_wheel sdist;
+    else
+      python setup.py sdist;
+    fi
+after_success:
+  - coveralls
+
+jobs:
+  include:
+    - stage: lint
+      python: 2.7
+
+      install: travis_retry pip install tox
+      script: tox -e flake8
+      after_success: true
