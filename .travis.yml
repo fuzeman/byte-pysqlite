@@ -10,11 +10,7 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy'* ]]; then travis_retry pip install pyOpenSSL>=16.2.0; fi
 script:
   - tox
-  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy3'* ]]; then
-      python setup.py bdist_wheel sdist;
-    else
-      python setup.py sdist;
-    fi
+  - python setup.py bdist_wheel sdist
 after_success:
   - coveralls
 
@@ -26,3 +22,43 @@ jobs:
       install: travis_retry pip install tox
       script: tox -e flake8
       after_success: true
+
+    - stage: Deploy to GitHub
+      python: 2.7
+
+      install: skip
+      script: python setup.py bdist_wheel sdist
+      after_success: true
+
+      deploy:
+        provider: releases
+        api_key:
+          secure: Dq1C88P1cI5EBK/0pcz9kcbfPCX0leKzsXbDRcZVy8mLD/TC9+YwxlQaye7dfrvlZybJRwhSuu354Qr7/EQy+LLzY7bl18Zh7cw6gKIft3H0FvjrnAU0CW8I4LvgNlnxzVqIIzV36+BJcgHmy2DOJpenDyXlpqXpIfyBupsYLkALNUBAZRw1UDjuV9ktQkJ8VBvbW/v/uB4/5XgtzMJZuxx9LQZgc0fJMTs47XcP4SN8APNZR/rK/MoQcBvnHjWZ2+PseTu9HD1eQffIMoxgvNGD86HaTv1r2HhPT1ag818d+0XjEMwtmdCATa/buDBSbvlJXkQEwdD0NBwb7w1qRepADLjM55il/ML9TSLbkHt9WsL7OtcHvZCjDz+H4sIW1ev/TL4AAl7coVPY8xWJMXokHV6npKwPrRHhKtjbOual52hf1nVD6Flzz+UUpl+i/vbv9KQMqNn0lMVDufntHJQ1p2y4HgG3LvgMHuxGOz11788GOQimAUuZv0GFfVxpGwPajawVtxyOzwJgpx9bmmBtb3yfysqIIhJEuB6pG8MgLDpJyArQL6K9rx8Awv69HA+kD5LRIo4YtOMz7aPDHuLnfiW5pl3Qbj86/2zWnAIsyuxTrHYw/jkl23SMoKZN/og0+zRVPp/6yuygx4W8ptzDgJAQkSR3Au3uCNdwP5w=
+        skip_cleanup: true
+        file_glob: true
+        file:
+          - "dist/byte-pysqlite-*"
+          - "dist/byte_pysqlite-*"
+        on:
+          condition: $TRAVIS_PYTHON_VERSION = "2.7"
+          repo: fuzeman/byte-pysqlite
+          tags: true
+
+    - stage: Deploy to PyPI
+      python: 2.7
+
+      install: skip
+      script: skip
+      after_success: true
+
+      deploy:
+        provider: pypi
+        distributions: "bdist_wheel sdist"
+        user: "fm-build"
+        password:
+          secure: H7fQ1MaHWmlrGUJDY8woLMazdsGL3CvGauSAYzZ8QbWLi/QKODZ6VV3HcHNkfdWNAqV8cE5VlNcDbRUpbvj+KTyNe7Q6i+qozxLVBy7fBXdfkNI3ZU8OqpCileNPuTGZZ6MdcpyNSCfU+EfM5Y0cauaQu1b2+KjrjGWsRRAo4v0BUhOfNZ8ULYLv6kSNQKhMA5sIZ3jIJSWOEIgVXxOyhL/72lL8HW5veSyPSWirdoL9ac0yfDnAengJK2VJuU3dQVDG3ShfoMgR3/VyIzgyYrSx19Baxe3NRUYzlViHILUhxr31vPPwznknRqtITRIevvVpTljM0yL13SFdK0Vv4RZd6B04vgadYiboXshaAqxq1PQYFwT/kKzPWJTN1PeyTdHJbTmaNhMC6kDbsiJ1fE+1EN19C2H2kEaKkh1r/ruKVMyCTA3ZgxXZlEF51TYx7pVOqZu/N4cbXehK99tWT9kKsVfU8nihKcmBn38wQgwgAQZgA89Doy5bRHYtVqHGlYE/VRITqJxJzJ06/uUQ6NQZBNhJTCaingyCSt1euN0yiBi8AhLfJnibgDjzgUfVkbGrL9yvlacQEtyVkrXEEGTsoDMltytE/5WU4Ybkk3ffQQqqjMPijwyixbEWmP9S0meWGpUCTSvo3bZgFIOWwdRm0CJfPAoGHw6uH/g178M=
+        skip_cleanup: true
+        on:
+          condition: $TRAVIS_PYTHON_VERSION = "2.7"
+          repo: fuzeman/byte-pysqlite
+          tags: true
