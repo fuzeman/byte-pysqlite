@@ -141,6 +141,14 @@ class PySqliteDatabaseExecutor(Base):
         engine = Plugin.Engine.Database
 
     def open_table(self, table):
+        """Open PySQLite table executor for :code:`table`.
+
+        :param table: Table
+        :type table: byte.engines.table.Table
+
+        :return: Table Executor
+        :rtype: PySqliteTableExecutor
+        """
         return PySqliteTableExecutor(
             table, self.uri,
             connections=self.connections,
