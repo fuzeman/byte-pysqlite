@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from byte.collection import Collection
-from byte.model import Model
-from byte.property import Property
+from byte.table import Model, Property, Table
 import byte.compilers.sqlite
 import byte.executors.pysqlite
 
@@ -20,8 +18,8 @@ class User(Model):
 
 
 def test_simple():
-    """Test single item can be retrieved from database."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+    """Test items can be retrieved by primary key."""
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])
@@ -42,7 +40,7 @@ def test_simple():
             cursor.execute("INSERT INTO users (id, username, password) VALUES (3, 'three', 'charlie');")
 
     # Validate items
-    user = users.get(User['id'] == 2)
+    user = users.select().where(User['id'] == 2).first()
 
     assert_that(user, all_of(
         not_none(),

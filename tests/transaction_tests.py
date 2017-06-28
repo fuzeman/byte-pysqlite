@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from byte.collection import Collection
-from byte.model import Model
-from byte.property import Property
+from byte.table import Model, Property, Table
 import byte.compilers.sqlite
 import byte.executors.pysqlite
 
@@ -23,7 +21,7 @@ class User(Model):
 
 def test_commit():
     """Test transaction is committed correctly."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])
@@ -55,7 +53,7 @@ def test_commit():
 
 def test_rollback():
     """Test transaction is committed correctly."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])
@@ -89,7 +87,7 @@ def test_rollback():
 
 def test_already_inside_transaction():
     """Ensure an exception is raised while attempting to create a transaction while already in a transaction."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])

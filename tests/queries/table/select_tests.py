@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from byte.collection import Collection
-from byte.model import Model
-from byte.property import Property
+from byte.table import Model, Property, Table
 import byte.compilers.sqlite
 import byte.executors.pysqlite
 
@@ -19,9 +17,48 @@ class User(Model):
     password = Property(str)
 
 
-def test_or():
-    """Test OR expression inside string can be compiled and executed."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+def test_all():
+    """Test all items can be retrieved from database."""
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
+        byte.compilers.sqlite,
+        byte.executors.pysqlite
+    ])
+
+    # Create table, and add items directly to database
+    with users.executor.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE users (
+                    id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    username    VARCHAR(255),
+                    password    VARCHAR(255)
+                );
+            """)
+
+            cursor.execute("INSERT INTO users (username, password) VALUES ('one', 'alpha');")
+            cursor.execute("INSERT INTO users (username, password) VALUES ('two', 'beta');")
+            cursor.execute("INSERT INTO users (username, password) VALUES ('three', 'charlie');")
+
+    # Validate items
+    assert_that(users.all(), only_contains(
+        has_properties({
+            'username': 'one',
+            'password': 'alpha'
+        }),
+        has_properties({
+            'username': 'two',
+            'password': 'beta'
+        }),
+        has_properties({
+            'username': 'three',
+            'password': 'charlie'
+        })
+    ))
+
+
+def test_get():
+    """Test single item can be retrieved from database."""
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])
@@ -42,34 +79,12 @@ def test_or():
             cursor.execute("INSERT INTO users (id, username, password) VALUES (3, 'three', 'charlie');")
 
     # Validate items
-    users = list(users.select().where('username == "one" or password == "charlie"').execute())
+    user = users.get(User['id'] == 2)
 
-    assert_that(users, has_length(2))
-
-
-def test_and():
-    """Test AND expression inside string can be compiled and executed."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
-        byte.compilers.sqlite,
-        byte.executors.pysqlite
-    ])
-
-    # Create table, and add items directly to database
-    with users.executor.connection() as connection:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                CREATE TABLE users (
-                    id          INTEGER         PRIMARY KEY AUTOINCREMENT NOT NULL,
-                    username    VARCHAR(255),
-                    password    VARCHAR(255)
-                );
-            """)
-
-            cursor.execute("INSERT INTO users (id, username, password) VALUES (1, 'one', 'alpha');")
-            cursor.execute("INSERT INTO users (id, username, password) VALUES (2, 'two', 'beta');")
-            cursor.execute("INSERT INTO users (id, username, password) VALUES (3, 'three', 'charlie');")
-
-    # Validate items
-    users = list(users.select().where('id > 1 and password != ?', 'charlie').execute())
-
-    assert_that(users, has_length(1))
+    assert_that(user, all_of(
+        not_none(),
+        has_properties({
+            'username': 'two',
+            'password': 'beta'
+        })
+    ))

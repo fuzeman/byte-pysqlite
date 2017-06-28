@@ -1,8 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from byte.collection import Collection
-from byte.model import Model
-from byte.property import Property
+from byte.table import Model, Property, Table
 import byte.compilers.sqlite
 import byte.executors.pysqlite
 
@@ -21,7 +19,7 @@ class User(Model):
 
 def test_single():
     """Test single item can be inserted into a database."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])
@@ -53,7 +51,7 @@ def test_single():
 
 def test_multiple():
     """Test multiple items can be inserted into a database."""
-    users = Collection(User, 'pysqlite://:memory:?table=users', plugins=[
+    users = Table(User, 'pysqlite://:memory:', name='users', plugins=[
         byte.compilers.sqlite,
         byte.executors.pysqlite
     ])
